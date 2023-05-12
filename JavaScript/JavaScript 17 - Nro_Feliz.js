@@ -18,10 +18,8 @@ function esFeliz(num)
         for(let i=0; i<num.length; i++)
         {
             cuadrado = num[i] * num[i];
-            document.write(num[i] + "->" + cuadrado + "<br>");
             suma = suma + cuadrado;
         }
-        document.write("Suma: " + suma + "<br>");
 
         if(suma == 1)
             return suma;
