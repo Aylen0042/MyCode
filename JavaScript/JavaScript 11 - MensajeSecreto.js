@@ -1,3 +1,6 @@
+/*
+    CONSIGNA: Crear una función que descifre un mensaje. Para esto, todo lo que esté entre paréntesis debe darse vuelta.
+*/
 
 let mensaje = "Hoy (.sh 22 sal a) (ed asac ne sominuer son) Marcelo.";
 
