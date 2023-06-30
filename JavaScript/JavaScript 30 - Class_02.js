@@ -29,22 +29,33 @@ class CEmpleado
 
     calcularAntiguedad()
     {
-        return 2022 - this.anio_ingreso;
+        var hoy = new Date();
+        var anio = hoy.getFullYear();        
+
+        return anio - this.anio_ingreso;
     }
 
     viveWallStreet()
     {
-        return this.direccion == 'Wall Street';
+        return this.direccion.includes('Wall Street') || this.direccion.includes('wall street');
     }
 }
 
-var nombre = prompt("Ingrese su nombre", '');
-var anio_ingreso = prompt("Ingrese su anio de ingreso", '');
-var salario = prompt("Ingrese su salario", '');
-var direccion = prompt("Ingrese su direccion", '');
+const formulario = document.getElementById('formulario');
+formulario.addEventListener('submit', function(event) 
+{
+  event.preventDefault();
 
-const empleado = new CEmpleado(nombre, anio_ingreso, salario, direccion);
+  const nombre = document.getElementById('nombre').value;
+  const anio_ingreso = document.getElementById('anio_ingreso').value;
+  const salario = document.getElementById('salario').value;
+  const direccion = document.getElementById('direccion').value;
 
-document.write(empleado.mostrarDatos());
-document.write("<br> Su antiguedad es de " + empleado.calcularAntiguedad() + " anios. <br>");
-document.write((empleado.viveWallStreet() ? 'Vive en Wall Street' : 'No vive en Wall Street'));
+  const empleado = new CEmpleado(nombre, anio_ingreso, salario, direccion);
+
+  const datosEmpleado = document.getElementById('datosEmpleado');
+  datosEmpleado.innerHTML = empleado.mostrarDatos() + "<br> Su antiguedad es de " 
+                            + empleado.calcularAntiguedad() + " anios. <br>" +
+                            (empleado.viveWallStreet() ? 'Vive en Wall Street' : 'No vive en Wall Street');
+}
+);
