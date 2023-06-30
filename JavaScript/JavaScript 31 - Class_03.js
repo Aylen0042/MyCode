@@ -33,12 +33,16 @@ class CPersona
 
     calcularIMC()
     {
+        var num;
+
         if(this.peso / (this.altura * this.altura) < 20)
-            return -1;
+            num = -1;
         else if(this.peso / (this.altura * this.altura) >= 20 && this.peso / (this.altura * this.altura) <= 25)
-            return 0;
+            num = 0;
         else if(this.peso / (this.altura * this.altura) > 25)
-            return 1;
+            num = 1;
+
+        return num;
     }
 
     esMayorDeEdad()
@@ -48,20 +52,28 @@ class CPersona
     
     comprobarGenero()
     {
+        var texto;
+
         if(this.genero == 'F' || this.genero == 'M' || this.genero == 'X')
-            return "El genero es correcto.";
+            texto = "El genero es correcto.";
         else
-            return "El genero es incorrecto.";
+            texto = "El genero es incorrecto.";
+
+        return texto;    
     }
 
     calcularIMC2(peso)
     {
+        var msj;
+
         if(peso == -1)
-            return "Esta por debajo de su peso ideal";
+            msj = "Esta por debajo de su peso ideal";
         else if(peso == 0)
-            return "Posee un peso ideal";
+            msj = "Posee un peso ideal";
         else if(peso == 1)
-            return"Tiene sobrepeso";
+            msj = "Tiene sobrepeso";
+
+        return msj;
     }
 }
 
