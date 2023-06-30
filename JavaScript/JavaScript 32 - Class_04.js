@@ -50,12 +50,21 @@ class CPassword
         return password;
     }
 }
-
-  const contrasenia1 = new CPassword();
-  document.write("Contrasenia: " + contrasenia1.contrasenia);  
-  document.write("<br> Es fuerte? " + contrasenia1.esFuerte());  
   
-  const contrasenia2 = new CPassword(14);  
-  document.write("</br> Contrasenia: " + contrasenia2.contrasenia);
-  document.write("<br> Es fuerte? " + contrasenia2.esFuerte());
+  const formulario = document.getElementById('formulario');
+  formulario.addEventListener('submit', function(event) 
+  {
+    event.preventDefault();
+  
+    const longitud = document.getElementById('longitud').value;
+  
+    const contrasenia = new CPassword(longitud);
+  
+    const datosPassword = document.getElementById('datosPassword');
+    datosPassword.innerHTML = "Contraseña: " + contrasenia.contrasenia + 
+                              "<br> Es fuerte?: " + contrasenia.esFuerte() +
+                              "<br> Nueva contrasenia: " + contrasenia.generarPassword();
+  }
+  );
+  
   
