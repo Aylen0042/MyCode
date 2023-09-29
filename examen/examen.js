@@ -1,100 +1,72 @@
-const http = require('http')
-const fs = require('fs')
+const http = require('http');
+const fs = require('fs');
+const url = require('url');
 
-const mime = {
-  'html': 'text/html',
-  'css': 'text/css',
-  'jpg': 'image/jpg',
-  'ico': 'image/x-icon',
-  'mp3': 'audio/mpeg3',
-  'mp4': 'video/mp4'
-}
+const server = http.createServer((req, res) => {
+    const parsedUrl = url.parse(req.url, true);
 
-const servidor = http.createServer((pedido, respuesta) => {
-  const url = new URL('http://localhost:8888' + pedido.url)
-  let camino = 'public' + url.pathname
-  if (camino == 'public/')
-    camino = 'public/index.html'
-  encaminar(pedido, respuesta, camino)
-})
-
-servidor.listen(8888)
-
-function encaminar(pedido, respuesta, camino) {
-  console.log(camino)
-  switch (camino) {
-    case 'public/recuperardatos': {
-      recuperar(pedido, respuesta)
-      break
-    }
-    default: {
-      fs.stat(camino, error => {
-        if (!error) {
-          fs.readFile(camino, (error, contenido) => {
-            if (error) {
-              respuesta.writeHead(500, { 'Content-Type': 'text/plain' })
-              respuesta.write('Error interno')
-              respuesta.end()
-            } else {
-              const vec = camino.split('.')
-              const extension = vec[vec.length - 1]
-              const mimearchivo = mime[extension]
-              respuesta.writeHead(200, { 'Content-Type': mimearchivo })
-              respuesta.write(contenido)
-              respuesta.end()
+    if (req.method === 'GET' && parsedUrl.pathname === '/') {
+        fs.readFile('index.html', (err, data) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.end('Error interno del servidor');
+                return;
             }
-          })
-        } else {
-          respuesta.writeHead(404, { 'Content-Type': 'text/html' })
-          respuesta.write('<!doctype html><html><head></head><body>Recurso inexistente</body></html>')
-          respuesta.end()
-        }
-      })
+
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(data);
+        });
+    } else if (req.method === 'POST' && parsedUrl.pathname === '/traducir') {
+        let body = '';
+
+        req.on('data', (chunk) => {
+            body += chunk;
+        });
+
+        req.on('end', () => {
+            const requestBody = JSON.parse(body);
+            const frase = requestBody.frase;
+
+            const fraseTraducida = traducirFrase(frase);
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ resultado: fraseTraducida }));
+        });
+    } else {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Página no encontrada');
     }
-  }
+});
+
+function traducirFrase(frase) {
+    const palabras = frase.split(' ');
+
+    const fraseTraducida = palabras
+        .map((palabra) => {
+            let palabraTraducida = '';
+
+            for (let i = 0; i < palabra.length; i++) {
+                if (
+                    palabra.charAt(i) !== 'a' &&
+                    palabra.charAt(i) !== 'e' &&
+                    palabra.charAt(i) !== 'i' &&
+                    palabra.charAt(i) !== 'o' &&
+                    palabra.charAt(i) !== 'u'
+                ) {
+                    palabraTraducida += palabra.charAt(i);
+                } else {
+                    palabraTraducida += palabra.charAt(i) + 'p' + palabra.charAt(i);
+                }
+            }
+
+            return palabraTraducida;
+        })
+        .join(' ');
+
+    return fraseTraducida;
 }
 
-
-function recuperar(pedido, respuesta) {
-  let info = ''
-  pedido.on('data', datosparciales => {
-    info += datosparciales
-  })
-  pedido.on('end', () => {
-    const formulario = new URLSearchParams(info)
-    console.log(formulario)
-    respuesta.writeHead(200, { 'Content-Type': 'text/html' })
-    const pagina =
-      `<!doctype html><html><head></head><body>
-     Palabra:${formulario.get('palabra')}<br>
-     </body></html>`
-     respuesta.end(pagina)
-
-     let palabra = formulario.get('palabra');
-
-     for(let i=0; i<palabra.length; i++)
-     {
-         if(palabra.charAt(i) != 'a' && palabra.charAt(i) != 'e' && palabra.charAt(i) != 'i' && palabra.charAt(i) != 'o' && palabra.charAt(i) != 'u')
-         console.log(palabra.charAt(i));
-         else
-         {
-         switch(palabra.charAt(i))
-         {
-             case 'a': console.log(palabra.charAt(i) + "p" + palabra.charAt(i));
-                 break;
-             case 'e': console.log(palabra.charAt(i) + "p" + palabra.charAt(i));
-                 break;
-             case 'i': console.log(palabra.charAt(i) + "p" + palabra.charAt(i));
-                 break;
-             case 'o': console.log(palabra.charAt(i) + "p" + palabra.charAt(i));
-                 break;
-             case 'u': console.log(palabra.charAt(i) + "p" + palabra.charAt(i));
-                 break;
-             default: console.log("La palabra no tiene vocales");
-         }
-         }           
-     }  
-       })
-}
-
-console.log('Servidor web iniciado');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Servidor en funcionamiento en el puerto ${PORT}`);
+});
