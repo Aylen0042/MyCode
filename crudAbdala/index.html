@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        form input 
+        {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #2c3e50;
+            border-radius: 4px;
+        }
+
+        li 
+        {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #3498db;
+            border-radius: 4px;
+            color: #ecf0f1;
+        }
+
+        ul { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<form id="formulario" style="padding: 20px; box-sizing: border-box;">
+    <table width="100%" style="background-color: #7FFFD4;">
+        <tr>
+            <td>
+                <strong>DNI:</strong> <input type="text" id="dni">    
+                <strong>Nacionalidad:</strong> <input type="text" id="nacionalidad">    
+            </td>
+            <td>
+                <strong>Nombre:</strong> <input type="text" id="nombre">    
+                <strong>Mejor obra:</strong> <input type="text" id="mejorObra">    
+            </td>
+            <td>
+                <strong>Apellido:</strong> <input type="text" id="apellido">
+                <strong>Año de publicación:</strong> <input type="text" id="anioPublicacion">    
+            </td>
+            <td>
+                <strong>Fecha de nacimiento:</strong> <input type="text" id="fechaNacimiento">    
+                <strong>Edad en publicación:</strong> <input type="text" id="edadEnPublicacion">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="submit" value="Crear" style="background-color: #27ae60; color: #ecf0f1; cursor: pointer; transition: background-color 0.3s;">
+            </td>
+        </tr>
+    </table>
+</form>
+
+<table>
+    <tr>
+        <td>
+            <button id="mostrarTodo" style="background-color: #27ae60; color: #ecf0f1; padding: 10px 15px; border: none; border-radius: 4px;">Mostrar todo</button>
+            <button id="autores_argentinos" style="background-color: #27ae60; color: #ecf0f1; padding: 10px 15px; border: none; border-radius: 4px;">Listar autores argentinos</button>
+            <button id="publicadoEntre60y80" style="background-color: #27ae60; color: #ecf0f1; padding: 10px 15px; border: none; border-radius: 4px;">Listar autores que hayan publicado entre 1960 y 1980</button>
+            <button id="promedioEdadPublicacion" style="background-color: #27ae60; color: #ecf0f1; padding: 10px 15px; border: none; border-radius: 4px;">Mostrar promedio de la edad de publicación</button>
+            <button id="eliminar" style="background-color: #27ae60; color: #ecf0f1; padding: 10px 15px; border: none; border-radius: 4px;">Eliminar un autor</button>
+            <button id="modificar" style="background-color: #27ae60; color: #ecf0f1; padding: 10px 15px; border: none; border-radius: 4px;">Modificar autor</button>
+        </td>
+    </tr>
+</table>
+
+<p id="imprimir"></p>
+
+<script>
+const datosImprimir = document.getElementById('imprimir');
+
+document.getElementById('formulario').addEventListener('submit', function(event) {
+    event.preventDefault(); 
+
+    const dni = document.getElementById('dni').value;
+    const nombre = document.getElementById('nombre').value;
+    const apellido = document.getElementById('apellido').value;
+    const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+    const nacionalidad = document.getElementById('nacionalidad').value;
+    const mejorObra = document.getElementById('mejorObra').value;
+    const anioPublicacion = document.getElementById('anioPublicacion').value;
+    const edadEnPublicacion = document.getElementById('edadEnPublicacion').value;
+
+    fetch("/imprimir", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ dni, nombre, apellido, fechaNacimiento, nacionalidad, mejorObra, anioPublicacion, edadEnPublicacion }),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        imprimir();
+    });
+});
+
+    function imprimir() 
+    {
+      datosImprimir.innerHTML = "";
+
+      fetch("/imprimir")
+        .then((response) => response.json())
+        .then((data) => {
+          data.forEach((enviar) => {
+            const list = document.createElement("li");
+            list.innerHTML = `DNI: ${enviar.dni} - ${enviar.nombre} - Apellido: ${enviar.apellido} - ${enviar.fechaNacimiento} - ${enviar.nacionalidad} - ${enviar.mejorObra} - ${enviar.anioPublicacion} - ${enviar.edadEnPublicacion}}`;
+            datosImprimir.appendChild(list);
+          });
+        })
+    }
+
+    document.getElementById('eliminar').addEventListener("click", ()=>{
+        const dni = document.getElementById('dni').value;
+        eliminarAutor(dni);
+    })
+
+    function eliminarAutor(dni) {
+      fetch("/eliminar", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ dni }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+            imprimir();
+        })
+    }
+
+    document.getElementById('autores_argentinos').addEventListener("click", ()=>{
+        imprimir();
+        mostrarAutoresArgentinos();
+    })
+
+    function mostrarAutoresArgentinos() 
+    {
+      fetch("/argentinos")
+        .then((response) => response.json())
+        .then((data) => {
+          data.forEach((autores) => {
+            const list = document.createElement("li");
+            list.innerHTML = `Nombre: ${autores.nombre} <br> Nacionalidad: ${autores.nacionalidad}`;
+            datosImprimir.appendChild(list);
+          });
+        })
+    }
+
+    document.getElementById('publicadoEntre60y80').addEventListener("click", ()=>{
+        imprimir();
+        mostrarPublicados();
+    })
+
+    function mostrarPublicados() 
+    {
+      fetch("/publicados")
+        .then((response) => response.json())
+        .then((data) => {
+          data.forEach((autores) => {
+            const list = document.createElement("li");
+            list.innerHTML = `Nombre: ${autores.nombre} <br> Año de publicación: ${autores.anioPublicacion}`;
+            datosImprimir.appendChild(list);
+          });
+        })
+    }
+
+    document.getElementById('mostrarTodo').addEventListener("click", ()=>{
+        imprimir();
+        mostrarTodo();
+    })
+
+    function mostrarTodo() 
+    {
+      fetch("/mostrarTodo")
+        .then((response) => response.json())
+        .then((data) => {
+          data.forEach((autores) => {
+            const list = document.createElement("li");
+            list.innerHTML = `DNI: ${autores.dni} <br> Nombre: ${autores.nombre} <br> Apellido: ${autores.apellido} Fecha de nacimiento: ${autores.fechaNacimiento} <br> Nacionalidad: ${autores.nacionalidad} <br> Mejor obra: ${autores.mejorObra} <br> Año de publicación: ${autores.anioPublicacion} <br> Edad en publicación: ${autores.edadEnPublicacion}`;
+            datosImprimir.appendChild(list);
+          });
+        })
+    }
+
+    document.getElementById('promedioEdadPublicacion').addEventListener("click", ()=>{
+        imprimir();
+        mostrarPromedio();
+    })
+
+    function mostrarPromedio() 
+    {
+      fetch("/promedio")
+        .then((response) => response.json())
+        .then((data) => {
+          data.forEach((autores) => {
+            const list = document.createElement("li");
+            list.innerHTML = `Promedio: ${autores.num}`;
+            datosImprimir.appendChild(list);
+          });
+        })
+    }
+
+    document.getElementById('modificar').addEventListener("click", ()=>{
+        const dni = document.getElementById('dni').value;
+        mostrarRegistro(dni);
+    })
+    
+    function mostrarRegistro(dni) {
+      fetch(`/mostrarRegistro/${dni}`)
+        .then((response) => response.json())
+        .then((data) => {
+            const autor = data[0];
+            modificar(autor);
+        })
+    }
+
+    function modificar(autor)
+    { 
+        const nuevoForm = document.createElement("form");
+        nuevoForm.innerHTML = `
+        Nombre: <input type="text" id="nNombre" value="${autor.nombre}">
+        Apellido: <input type="text" id="nApellido" value="${autor.apellido}">
+        Fecha nacimiento: <input type="text" id="nFechaNacimiento" value="${autor.fechaNacimiento}">
+        Nacionalidad: <input type="text" id="nNacionalidad" value="${autor.nacionalidad}">
+        Mejor obra: <input type="text" id="nMejorObra" value="${autor.mejorObra}">
+        Año de publicación: <input type="text" id="nAnioPublicacion" value="${autor.anioPublicacion}">
+        Edad en publicación: <input type="text" id="nEdadEnPublicacion" value="${autor.edadEnPublicacion  }">
+        <button type="submit">Modificar</button>`;
+
+        nuevoForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const nNombre = document.getElementById("nNombre").value;
+            const nApellido = document.getElementById("nApellido").value;
+            const nFechaNacimiento = document.getElementById("nFechaNacimiento").value;
+            const nNacionalidad = document.getElementById("nNacionalidad").value;
+            const nMejorObra = document.getElementById("nMejorObra").value;
+            const nAnioPublicacion = document.getElementById("nAnioPublicacion").value;
+            const nEdadEnPublicacion = document.getElementById("nEdadEnPublicacion").value;
+
+            fetch(`/modificar/${autor.dni}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ nNombre, nApellido, nFechaNacimiento, nNacionalidad, nMejorObra, nAnioPublicacion, nEdadEnPublicacion }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                imprimir();
+            });
+    });
+
+    datosImprimir.innerHTML = "";
+    datosImprimir.appendChild(nuevoForm);
+}
+
+    /*
+    function modificar(dni) 
+    {
+        fetch(`/mostrarRegistro/${dni}`)
+        .then((response) => response.json())
+        .then((data) => {
+
+        if(data.length > 0){
+            const autor = data[0];
+    
+        const nuevoForm = document.createElement("form");
+        nuevoForm.innerHTML = `
+        Nombre: <input type="text" id="nNombre" value="${dni.nombre}">
+        Apellido: <input type="text" id="nApellido" value="${autor.nombre}">
+        Fecha nacimiento: <input type="text" id="nFechaNacimiento" value="${autor.nombre}">
+        Nacionalidad: <input type="text" id="nNacionalidad" value="${autor.nombre}">
+        Mejor obra: <input type="text" id="nMejorObra" value="${autor.nombre}">
+        Año de publicación: <input type="text" id="nAnioPublicacion" value="${autor.nombre}">
+        Edad en publicación: <input type="text" id="nEdadEnPublicacion" value="${autor.nombre}">
+        <button type="submit">Modificar</button>`;
+
+        nuevoForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const nNombre = document.getElementById("nNombre").value;
+            const nApellido = document.getElementById("nApellido").value;
+            const nFechaNacimiento = document.getElementById("nFechaNacimiento").value;
+            const nNacionalidad = document.getElementById("nNacionalidad").value;
+            const nMejorObra = document.getElementById("nMejorObra").value;
+            const nAnioPublicacion = document.getElementById("nAnioPublicacion").value;
+            const nEdadEnPublicacion = document.getElementById("nEdadEnPublicacion").value;
+
+            fetch(`/modificar/${dni}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ nNombre, nApellido, nFechaNacimiento, nNacionalidad, nMejorObra, nAnioPublicacion, nEdadEnPublicacion }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                imprimir();
+            });
+    });
+
+    datosImprimir.innerHTML = "";
+    datosImprimir.appendChild(nuevoForm);
+}
+    });
+    }
+    */
+imprimir();
+</script> 
+
+</body>
+</html>
